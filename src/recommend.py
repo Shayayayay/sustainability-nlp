@@ -3,7 +3,10 @@ import numpy as np
 import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from paraphrase import paraphrase
+
+use_paraphrase = False
+if use_paraphrase:
+    from paraphraser import paraphrase
 
 print("=== Recommendation System Running ===")
 def load_data():
@@ -67,11 +70,14 @@ def recommend(query, df, embeddings, model, top_k=3):
     for i, _ in top:
         original = df.iloc[i]["text"]
         cleaned = clean_text(original)
-        try:
-            rewritten = paraphrase(cleaned)
-            results.append(rewritten)
-        except Exception as e:
-            # Fallback if paraphraser fails
+        if use_paraphrase:
+            try:
+                rewritten = paraphrase(cleaned)
+                results.append(rewritten)
+            except Exception as e:
+                # Fallback if paraphraser fails
+                results.append(cleaned)
+        else:
             results.append(cleaned)
 
     return results
